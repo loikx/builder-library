@@ -44,8 +44,6 @@ func (b *Builder[T]) With(key string, value any) *Builder[T] {
 			fmt.Sprintf("can not set field %s with type %v", key, reflect.TypeOf(value)),
 		)
 
-		b.item = nil
-
 		return b
 	}
 
