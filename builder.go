@@ -10,7 +10,7 @@ type Builder[T any] struct {
 	item   *T
 	typeOf reflect.Type
 
-	err error
+	errors []error
 }
 
 func NewBuilder[T any]() *Builder[T] {
@@ -29,8 +29,11 @@ func (b *Builder[T]) With(key string, value any) *Builder[T] {
 
 	_, ok := b.typeOf.FieldByName(key)
 	if !ok {
-		b.err = errors.New(
-			fmt.Sprintf("does not have field %s with type %v", key, reflect.TypeOf(value)),
+		b.errors = append(
+			b.errors,
+			errors.New(
+				fmt.Sprintf("does not have field %s with type %v", key, reflect.TypeOf(value)),
+			),
 		)
 
 		b.item = nil
@@ -40,8 +43,11 @@ func (b *Builder[T]) With(key string, value any) *Builder[T] {
 
 	field := reflect.ValueOf(b.item).Elem().FieldByName(key)
 	if !field.CanSet() {
-		b.err = errors.New(
-			fmt.Sprintf("can not set field %s with type %v", key, reflect.TypeOf(value)),
+		b.errors = append(
+			b.errors,
+			errors.New(
+				fmt.Sprintf("can not set field %s with type %v", key, reflect.TypeOf(value)),
+			),
 		)
 
 		return b
@@ -52,6 +58,6 @@ func (b *Builder[T]) With(key string, value any) *Builder[T] {
 	return b
 }
 
-func (b *Builder[T]) Build() (*T, error) {
-	return b.item, b.err
+func (b *Builder[T]) Build() (*T, []error) {
+	return b.item, b.errors
 }
